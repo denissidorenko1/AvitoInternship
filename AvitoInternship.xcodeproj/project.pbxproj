@@ -6,8 +6,13 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		92E336C62D5AA20A00FD363F /* Podfile in Resources */ = {isa = PBXBuildFile; fileRef = 92E336C52D5AA1F400FD363F /* Podfile */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		92E336AD2D5AA07500FD363F /* AvitoInternship.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AvitoInternship.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		92E336C52D5AA1F400FD363F /* Podfile */ = {isa = PBXFileReference; lastKnownFileType = text; path = Podfile; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -32,6 +37,7 @@
 		92E336A42D5AA07500FD363F = {
 			isa = PBXGroup;
 			children = (
+				92E336C52D5AA1F400FD363F /* Podfile */,
 				92E336AF2D5AA07500FD363F /* AvitoInternship */,
 				92E336AE2D5AA07500FD363F /* Products */,
 			);
@@ -109,6 +115,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				92E336C62D5AA20A00FD363F /* Podfile in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
