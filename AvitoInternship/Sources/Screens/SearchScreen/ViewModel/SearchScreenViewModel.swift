@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 
+@MainActor
 final class SearchScreenViewModel: ObservableObject {
     // MARK: - ViewState
     enum ViewState {
@@ -61,7 +62,7 @@ final class SearchScreenViewModel: ObservableObject {
                 priceMin: filterState.priceMin,
                 priceMax: filterState.priceMax,
                 categoryId: filterState.currentCategoryId,
-                categoryName: currentCategory?.name
+                categoryName: filterState.currentCategory?.name
             )
         )
     }

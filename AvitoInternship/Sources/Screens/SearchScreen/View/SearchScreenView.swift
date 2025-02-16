@@ -320,7 +320,7 @@ private extension SearchScreenView {
             Divider()
             ForEach(vm.categories, id: \.id) { category in
                 CategoryView(categoryName: category.name, categoryImageUrlString: category.image)
-                    .foregroundStyle(vm.currentCategory == category ? Color.blue : Color.gray)
+                    .foregroundStyle(vm.filterState.currentCategory == category ? Color.blue : Color.gray)
                     .onTapGesture {
                         vm.didSelectCategory(category)
                     }
