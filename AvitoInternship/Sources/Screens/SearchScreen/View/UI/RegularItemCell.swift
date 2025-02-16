@@ -46,6 +46,7 @@ struct RegularItemCell: View {
             .multilineTextAlignment(.leading)
     }
     
+    // FIXME: если будет время, поправить баг с неправильным отображением числа элементов между корзиной и ячейкой
     var minusIcon: some View {
         Image(systemName: "minus")
             .resizable()
@@ -57,7 +58,7 @@ struct RegularItemCell: View {
             .contentShape(Rectangle())
             .onTapGesture {
                 quantity -= 1
-                vm.decrementQuantity(for: item)
+                vm.decrementProduct(item)
             }
     }
     
@@ -79,15 +80,10 @@ struct RegularItemCell: View {
             .padding(.trailing, 10)
             .onTapGesture {
                 quantity += 1
-                vm.incrementQuantity(for: item)
+                vm.incrementProduct(item)
             }
     }
-    
 }
-
-
-
-
 
 #Preview {
     RegularItemCell(

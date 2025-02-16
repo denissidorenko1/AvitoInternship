@@ -5,7 +5,6 @@ import SkeletonUI
 
 // MARK: - SearchScreenView
 struct SearchScreenView: View {
-    private let columns = [GridItem(.flexible()), GridItem(.flexible())] // перенести в расширени
     @StateObject private var vm = SearchScreenViewModel()
     
     var body: some View {
@@ -35,8 +34,8 @@ struct SearchScreenView: View {
         }
         .searchable(
             text: Binding(
-                get: { vm.title ?? ""},
-                set: { vm.title = $0.isEmpty ? nil : $0 }
+                get: { vm.filterState.title ?? ""},
+                set: { vm.filterState.title = $0.isEmpty ? nil : $0 }
             ),
             isPresented: Binding(
                 get: { vm.viewState == .options },
@@ -44,7 +43,7 @@ struct SearchScreenView: View {
             )
         )
         .onSubmit(of: .search) {
-            vm.saveQuery()
+            vm.saveNewQuery()
             vm.fetchProducts()
             
         }
@@ -52,11 +51,6 @@ struct SearchScreenView: View {
             vm.fetchProducts()
         }
     }
-    
-    
-   
-    
-
 }
 
 // MARK: - errorView
@@ -112,9 +106,10 @@ extension SearchScreenView {
 
 // MARK: - listView
 extension SearchScreenView {
+    //private let columns = [GridItem(.flexible()), GridItem(.flexible())] // перенести в расширени
     var listView: some View {
         ScrollView {
-            LazyVGrid(columns: columns) {
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())]) {
                 ForEach(vm.productList.indices, id: \.self) { index in
                     RegularItemCell(item: $vm.productList[index])
                         .environmentObject(vm)
@@ -137,9 +132,8 @@ extension SearchScreenView {
             bucketView
         }
         .onAppear() {
-            vm.loadPurchaseList()
+            vm.loadShoppingList()
         }
-        
     }
     
     var bucketView: some View {
@@ -155,14 +149,14 @@ extension SearchScreenView {
                     }
                     .navigationDestination(
                         isPresented: $vm.isShowingBucket) {
-                            BucketListView(vm: BucketListViewModel(itemList: vm.purchaseList))
+                            BucketListView(vm: BucketListViewModel(itemList: vm.shoppingList))
                         }
             }
         }
     }
     
     var bucketButton: some View {
-        Text("\(vm.purchaseList.map { $0.quantity * $0.item.price}.reduce(0, +)) ₽")
+        Text("\(vm.shoppingList.map { $0.quantity * $0.item.price}.reduce(0, +)) ₽")
             .font(.system(size: 18, weight: .semibold))
             .foregroundStyle(.white)
             .padding(.vertical)
@@ -171,7 +165,7 @@ extension SearchScreenView {
                 RoundedRectangle(cornerRadius: 50)
                     .fill(.customPink)
             })
-            .animation(.bouncy, value: vm.purchaseList)
+            .animation(.bouncy, value: vm.shoppingList)
     }
 }
 
@@ -214,7 +208,7 @@ extension SearchScreenView {
 extension SearchScreenView {
     var loadView: some View {
         ScrollView {
-            LazyVGrid(columns: columns) {
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())]) {
                 ForEach(0..<10, id: \.self) { _ in
                     RegularItemSkeletonCell()
                 }
@@ -242,7 +236,6 @@ extension SearchScreenView {
                 vm.fetchRecentQueries()
                 vm.fetchCategories()
             }
-            
             actionButtons
         }
     }
@@ -284,13 +277,20 @@ extension SearchScreenView {
                 .foregroundStyle(.customText)
             
             HStack {
-                priceTextField(title: "От", value: $vm.priceMin)
-                priceTextField(title: "До", value: $vm.priceMax)
+                priceTextField(title: "От", value: intToStringBinding($vm.filterState.priceMin))
+                priceTextField(title: "До", value: intToStringBinding($vm.filterState.priceMax))
             }
             .padding(.vertical)
             
             Divider()
         }
+    }
+    
+    func intToStringBinding(_ intBinding: Binding<Int?>) -> Binding<String?> {
+        Binding<String?>(
+            get: { intBinding.wrappedValue.map { String($0) } },
+            set: { intBinding.wrappedValue = $0.flatMap { Int($0) } }
+        )
     }
     
     func priceTextField(title: String, value: Binding<String?>) -> some View {
@@ -317,9 +317,7 @@ private extension SearchScreenView {
                 
                 deleteCategoryButton
             }
-            
             Divider()
-            
             ForEach(vm.categories, id: \.id) { category in
                 CategoryView(categoryName: category.name, categoryImageUrlString: category.image)
                     .foregroundStyle(vm.currentCategory == category ? Color.blue : Color.gray)
@@ -352,7 +350,7 @@ private extension SearchScreenView {
             }
             Spacer()
             actionButton(title: "Поиск", color: .customPink) {
-                vm.saveQuery()
+                vm.saveNewQuery()
                 vm.fetchProducts()
             }
         }

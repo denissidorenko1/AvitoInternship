@@ -1,48 +1,27 @@
 import Foundation
-import Combine
+import SwiftUI
 
-// MARK: - SearchScreenViewModel
 final class SearchScreenViewModel: ObservableObject {
     // MARK: - ViewState
     enum ViewState {
-        case loading
-        case loaded
-        case error
-        case empty
-        case options
+        case loading, loaded, error, empty, options
     }
-    
-    // MARK: Dependencies
-    private let networkingService = NetworkingService.shared
-    private let queryService = RecentQueryService.shared
-    private let purchaseStorageService = ShoppingListStorage.shared
-    
-    // MARK: - Initializer
-    init() {
-        purchaseStorageService.operationCompletion
-            .sink { [weak self] _ in
-                self?.loadPurchaseList()
-            }
-            .store(in: &cancellables)
-    }
+
+    // MARK: - Dependencies
+    private let repository: SearchRepositoryProtocol
+    private let shoppingListManager: ShoppingListManagerProtocol
+    private let networkModel: NetworkSearchModelProtocol
     
     // MARK: - Published Properties
-    @Published var viewState : ViewState = .loading
-    @Published var title: String? = "" { didSet { hasChanges = true }}
-    @Published var priceMin: String? = "" { didSet { hasChanges = true }}
-    @Published var priceMax: String? = "" { didSet { hasChanges = true }}
-    @Published var currentCategory: Category? { didSet { hasChanges = true }}
-    @Published var currentCategoryId: Int? { didSet { hasChanges = true }}
-    
+    @Published var viewState: ViewState = .loading
+    @Published var filterState = FilterState()
     @Published var productList: [ProductModel] = []
     @Published var latestQueries: [LastQuery] = []
+    @Published var shoppingList: [BucketListItem] = []
     @Published var categories: [Category] = []
-    @Published var purchaseList: [BucketListItem] = []
+    @Published var currentCategory: Category?
     @Published var selectedItem: ProductModel?
-    
-    
     @Published var isShowingBucket: Bool = false
-
     @Published var isViewPresented: Bool = false {
         didSet {
             if !isViewPresented {
@@ -50,74 +29,77 @@ final class SearchScreenViewModel: ObservableObject {
             }
         }
     }
-    
+
     // MARK: - Private Properties
-    private var hasChanges: Bool = false
-    private var cancellables = Set<AnyCancellable>()
-    private var loadLimit: Int = 10
+    private let loadLimit = 10
     
     // MARK: - Computed Properties
-    var totalPrice: Int { purchaseList.map { $0.quantity * $0.item.price}.reduce(0, +) }
-    
-    // MARK: - Public Methods
-    func fetchRecentQueries() {
-        latestQueries = queryService.load()
+    var totalPrice: Int {
+        shoppingListManager.totalPrice
+    }
+
+    // MARK: - Initializer
+    init(repository: SearchRepositoryProtocol = SearchRepository(),
+         shoppingListManager: ShoppingListManagerProtocol = ShoppingListManager(),
+         networkModel: NetworkSearchModelProtocol = NetworkSearchModel()) {
+        self.repository = repository
+        self.shoppingListManager = ShoppingListManager()
+        self.networkModel = networkModel
     }
     
-    func saveQuery() {
-        let _ = queryService.save(
+    // MARK: - Public Properties
+    // MARK: Data Fetching
+    func fetchRecentQueries() {
+        latestQueries = repository.fetchRecentQueries()
+    }
+    
+    func saveNewQuery() {
+        repository.saveQuery(
             LastQuery(
-                text: title,
+                text: filterState.title,
                 date: .now,
-                priceMin: priceMin == nil ? nil : Int(priceMin!),
-                priceMax: priceMax == nil ? nil : Int(priceMax!),
-                categoryId: currentCategoryId,
+                priceMin: filterState.priceMin,
+                priceMax: filterState.priceMax,
+                categoryId: filterState.currentCategoryId,
                 categoryName: currentCategory?.name
             )
         )
     }
     
-    func didSelectCategory(_ category: Category) {
-        currentCategory = category
-        currentCategoryId = category.id
-    }
-    
-    func clearFilter() {
-        title = nil
-        priceMin = nil
-        priceMax = nil
-        currentCategory = nil
-        currentCategoryId = nil
-        purchaseList = []
-        hasChanges = true
-        
-        fetchProducts()
-    }
-    
-    func clearCurrentCategory() {
-        currentCategory = nil
-        currentCategoryId = nil
-        hasChanges = true
-    }
-    
-    func fetchFromRecentQuery(with queryItem: LastQuery) {
-        title = queryItem.text
-        priceMin = queryItem.priceMin == nil ? nil : String(queryItem.priceMin!)
-        priceMax = queryItem.priceMax == nil ? nil : String(queryItem.priceMax!)
-        currentCategoryId = queryItem.categoryId
-        
-        fetchProducts()
+    func fetchProducts() {
+        Task {
+            await MainActor.run { viewState = .loading }
+            do {
+                if filterState.hasChanges { productList = [] }
+                
+                let products = try await networkModel.fetchProducts(
+                    title: filterState.title,
+                    categoryId: filterState.currentCategoryId,
+                    priceMin: filterState.priceMin,
+                    priceMax: filterState.priceMax,
+                    offset: productList.count,
+                    limit: loadLimit
+                )
+                
+                await MainActor.run {
+                    filterState.hasChanges = false
+                    productList = products
+                    viewState = products.isEmpty ? .empty : .loaded
+                }
+            } catch {
+                await MainActor.run { viewState = .error }
+            }
+        }
     }
     
     func loadNewPage() {
         Task {
             do {
-                let products = try await networkingService.getFilteredProductList(
-                    title: title,
-                    categoryId: currentCategoryId,
-                    priceMin: priceMin == nil ? nil : Int(priceMin!),
-                    priceMax: priceMax == nil ? nil : Int(priceMax!),
-                    price: nil,
+                let products = try await networkModel.fetchProducts(
+                    title: filterState.title,
+                    categoryId: filterState.currentCategoryId,
+                    priceMin: filterState.priceMin,
+                    priceMax: filterState.priceMax,
                     offset: productList.count,
                     limit: loadLimit
                 )
@@ -130,99 +112,62 @@ final class SearchScreenViewModel: ObservableObject {
         }
     }
     
-    func fetchProducts() {
-        Task {
-            await MainActor.run {
-                viewState = .loading
-            }
-            do {
-                if hasChanges { productList = []}
-                
-                let products = try await networkingService.getFilteredProductList(
-                    title: title,
-                    categoryId: currentCategoryId,
-                    priceMin: priceMin == nil ? nil : Int(priceMin!),
-                    priceMax: priceMax == nil ? nil : Int(priceMax!),
-                    price: nil,
-                    offset: productList.count,
-                    limit: loadLimit
-                )
-                await MainActor.run {
-                    hasChanges = false
-                    if products.count == 0 {
-                        productList = products
-                        viewState = .empty
-                    } else {
-                        productList.append(contentsOf: products)
-                        viewState = .loaded
-                    }
-                }
-            } catch {
-                viewState = .error
-            }
-        }
-    }
-    
-    func loadPurchaseList() {
-        purchaseList = purchaseStorageService.load()
-    }
-    
-    func incrementQuantity(for productModel: ProductModel) {
-        let firstIndex = purchaseList.firstIndex { BucketListItem in
-            BucketListItem.item.id == productModel.id
-        }
-        
-        if let firstIndex {
-            incrementQuantity(for: purchaseList[firstIndex])
-        } else {
-            purchaseList.append(
-                BucketListItem(item: productModel, quantity: 1)
-            )
-            savePurchaseList()
-        }
-    }
-    
-    func decrementQuantity(for productModel: ProductModel) {
-        let firstIndex = purchaseList.firstIndex { BucketListItem in
-            BucketListItem.item.id == productModel.id
-        }
-        
-        if let firstIndex {
-            decrementQuantity(for: purchaseList[firstIndex])
-        }
-    }
-    
     func fetchCategories() {
         Task {
             do {
-                categories = try await networkingService.getCategoryList()
+                categories = try await networkModel.fetchCategories()
             } catch {
                 print(error)
             }
         }
     }
-    
-    // MARK: - Private Methods
-    private func incrementQuantity(for item: BucketListItem) {
-        if let index = purchaseList.firstIndex(of: item) {
-            purchaseList[index].quantity += 1
-            savePurchaseList()
-        }
+
+    // MARK: Search & Filters
+    func didSelectCategory(_ category: Category) {
+        filterState.currentCategory = category
+        filterState.currentCategoryId = category.id
     }
     
-    private func decrementQuantity(for item: BucketListItem) {
-        if let index = purchaseList.firstIndex(of: item), item.quantity > 0 {
-            purchaseList[index].quantity -= 1
-            if purchaseList[index].quantity == 0 {
-                purchaseList.remove(at: index)
-            }
-            savePurchaseList()
-        }
+    func clearFilter() {
+        filterState.reset()
+        fetchProducts()
+    }
+
+    func clearCurrentCategory() {
+        filterState.currentCategory = nil
+        filterState.currentCategoryId = nil
+    }
+
+    func fetchFromRecentQuery(with query: LastQuery) {
+        filterState.update(from: query)
+        fetchProducts()
+    }
+
+    // MARK: Shopping List Management
+    func incrementProduct(_ product: ProductModel) {
+        shoppingListManager.incrementProduct(product)
+        loadShoppingList()
     }
     
-    private func savePurchaseList() {
-        purchaseStorageService.save(shoppingList: purchaseList)
+    func decrementProduct(_ product: ProductModel) {
+        shoppingListManager.decrementProduct(product)
+        loadShoppingList()
     }
+    
+    func incrementQuantity(for item: BucketListItem) {
+        shoppingListManager.incrementQuantity(for: item)
+        loadShoppingList()
+    }
+    
+    func decrementQuantity(for item: BucketListItem) {
+        shoppingListManager.decrementQuantity(for: item)
+        loadShoppingList()
+    }
+    
+    func loadShoppingList() {
+        shoppingList = shoppingListManager.loadPurchaseList()
+    }
+    
     
     // MARK: - Navigation Handling
     func didTapItem(_ item: ProductModel) {
