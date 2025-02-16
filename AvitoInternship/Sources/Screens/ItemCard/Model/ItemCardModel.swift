@@ -3,7 +3,9 @@ import Foundation
 
 // MARK: - ItemCardModelProtocol
 protocol ItemCardModelProtocol {
-    
+    func incrementProduct(_ product: ProductModel)
+    func decrementProduct(_ product: ProductModel)
+    func getCurrentItemCount(with item: ProductModel) -> Int
 }
 
 // MARK: - ItemCardModel

@@ -11,7 +11,7 @@ import SwiftUI
 struct AvitoInternshipApp: App {
     var body: some Scene {
         WindowGroup {
-            Text("There should be a root View...")
+            SearchScreenView()
         }
     }
 }

@@ -16,9 +16,9 @@ protocol ItemCardViewModelProtocol {
 // MARK: - ItemCardViewModel
 final class ItemCardViewModel: ItemCardViewModelProtocol, ObservableObject {
     // MARK: - Dependencies
-    private let model: ItemCardModel
+    private let model: ItemCardModelProtocol
     // MARK: - Initializer
-    init(item: ProductModel, model: ItemCardModel = ItemCardModel()) {
+    init(item: ProductModel, model: ItemCardModelProtocol = ItemCardModel()) {
         self.item = item
         self.model = model
     }
