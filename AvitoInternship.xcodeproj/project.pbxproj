@@ -7,12 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		92E336C62D5AA20A00FD363F /* Podfile in Resources */ = {isa = PBXBuildFile; fileRef = 92E336C52D5AA1F400FD363F /* Podfile */; };
+		923EEB972D5E23B000431502 /* SkeletonUI in Frameworks */ = {isa = PBXBuildFile; productRef = 923EEB962D5E23B000431502 /* SkeletonUI */; };
+		923EEB9A2D5E23C400431502 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 923EEB992D5E23C400431502 /* Kingfisher */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		92E336AD2D5AA07500FD363F /* AvitoInternship.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AvitoInternship.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		92E336C52D5AA1F400FD363F /* Podfile */ = {isa = PBXFileReference; lastKnownFileType = text; path = Podfile; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -28,6 +28,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				923EEB9A2D5E23C400431502 /* Kingfisher in Frameworks */,
+				923EEB972D5E23B000431502 /* SkeletonUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -37,7 +39,6 @@
 		92E336A42D5AA07500FD363F = {
 			isa = PBXGroup;
 			children = (
-				92E336C52D5AA1F400FD363F /* Podfile */,
 				92E336AF2D5AA07500FD363F /* AvitoInternship */,
 				92E336AE2D5AA07500FD363F /* Products */,
 			);
@@ -71,6 +72,8 @@
 			);
 			name = AvitoInternship;
 			packageProductDependencies = (
+				923EEB962D5E23B000431502 /* SkeletonUI */,
+				923EEB992D5E23C400431502 /* Kingfisher */,
 			);
 			productName = AvitoInternship;
 			productReference = 92E336AD2D5AA07500FD363F /* AvitoInternship.app */;
@@ -100,6 +103,10 @@
 			);
 			mainGroup = 92E336A42D5AA07500FD363F;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				923EEB952D5E23B000431502 /* XCRemoteSwiftPackageReference "SkeletonUI" */,
+				923EEB982D5E23C400431502 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 92E336AE2D5AA07500FD363F /* Products */;
 			projectDirPath = "";
@@ -115,7 +122,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				92E336C62D5AA20A00FD363F /* Podfile in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -331,6 +337,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		923EEB952D5E23B000431502 /* XCRemoteSwiftPackageReference "SkeletonUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/CSolanaM/SkeletonUI";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.2;
+			};
+		};
+		923EEB982D5E23C400431502 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.2.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		923EEB962D5E23B000431502 /* SkeletonUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 923EEB952D5E23B000431502 /* XCRemoteSwiftPackageReference "SkeletonUI" */;
+			productName = SkeletonUI;
+		};
+		923EEB992D5E23C400431502 /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 923EEB982D5E23C400431502 /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 92E336A52D5AA07500FD363F /* Project object */;
 }
