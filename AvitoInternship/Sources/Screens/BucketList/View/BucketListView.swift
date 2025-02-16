@@ -131,7 +131,5 @@ extension BucketListView {
 
 
 #Preview {
-    BucketListView(
-        vm:  BucketListViewModel(itemList: [])
-    )
+    BucketListView(vm: BucketListViewModel(model: BucketListModel()))
 }

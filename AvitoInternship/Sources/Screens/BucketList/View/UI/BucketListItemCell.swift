@@ -52,23 +52,7 @@ struct BucketListItemCell: View {
 }
 
 #Preview {
-    @Previewable @StateObject var vm: BucketListViewModel = BucketListViewModel(
-        itemList: [BucketListItem(
-            item: ProductModel(
-                id: 1,
-                title: "Бальзам для губ Самокат, Mango Care",
-                price: 199,
-                description: "",
-                images: ["https://i.imgur.com/jVfoZnP.jpg"],
-                category: Category(
-                    id: 1,
-                    name: "Другое",
-                    image: ""
-                )
-            ),
-            quantity: 1
-        ) ]
-    )
+    @Previewable @StateObject var vm: BucketListViewModel = BucketListViewModel()
     
     BucketListItemCell(item: $vm.itemList[0])
         .environmentObject(vm)

@@ -149,7 +149,7 @@ extension SearchScreenView {
                     }
                     .navigationDestination(
                         isPresented: $vm.isShowingBucket) {
-                            BucketListView(vm: BucketListViewModel(itemList: vm.shoppingList))
+                            BucketListView(vm: BucketListViewModel())
                         }
             }
         }
