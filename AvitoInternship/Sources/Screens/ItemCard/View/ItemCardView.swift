@@ -165,8 +165,7 @@ extension ItemCardView {
                 category: Category.init(
                     id: 1,
                     name: "Тестовая категория",
-                    image: "",
-                    sizeType: .large
+                    image: ""
                 )
             )
         )

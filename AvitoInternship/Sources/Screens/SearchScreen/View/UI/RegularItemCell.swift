@@ -97,8 +97,7 @@ struct RegularItemCell: View {
                 category: Category(
                     id: 1,
                     name: "Анекдот категории Б",
-                    image: "https://i.imgur.com/qNOjJje.jpeg",
-                    sizeType: .regular
+                    image: "https://i.imgur.com/qNOjJje.jpeg"
                 )
             )
         )

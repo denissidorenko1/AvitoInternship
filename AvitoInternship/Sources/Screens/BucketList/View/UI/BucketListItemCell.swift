@@ -63,8 +63,7 @@ struct BucketListItemCell: View {
                 category: Category(
                     id: 1,
                     name: "Другое",
-                    image: "",
-                    sizeType: .large
+                    image: ""
                 )
             ),
             quantity: 1
