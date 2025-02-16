@@ -3,7 +3,7 @@ import Kingfisher
 
 // MARK: - ItemCardView
 struct ItemCardView: View {
-    @State var viewModel: ItemCardViewModel
+    @StateObject var viewModel: ItemCardViewModel
     @State private var currentIndex = 0
     
     let timer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
@@ -20,7 +20,9 @@ struct ItemCardView: View {
                 purchaseContainer
             }
             .ignoresSafeArea(.all)
-            
+        }
+        .onAppear {
+            viewModel.didAppear()
         }
     }
 }
@@ -105,8 +107,6 @@ extension ItemCardView {
     
     var shareButton: some View {
         Image(systemName: "square.and.arrow.up")
-            .resizable()
-            .frame(width: 20, height: 20)
             .padding(10)
             .foregroundStyle(.customHighlight)
             .background(alignment: .center, content: {
@@ -119,24 +119,25 @@ extension ItemCardView {
 // MARK: - PurchaseContainer
 extension ItemCardView {
     var purchaseContainer: some View {
+        VStack {
+            if viewModel.itemCount == 0 {
+                EmptyView()
+            } else {
+                Text("В корзине \(viewModel.itemCount) шт")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(.white)
+            }
         HStack() {
             Spacer()
-            Text("\(viewModel.item.price) ₽")
-                .foregroundStyle(.customBackground)
-                .font(.system(size: 22, weight: .bold))
-            Button {
-                // FIXME: - добавить возможность добавить элемент в корзину отсюда
-                print("didTap")
-            } label: {
-                Image(systemName: "plus")
-                    .resizable()
-                    .frame(width: 25, height: 25)
-                    .padding(5)
+            
+            if viewModel.itemCount > 0 {
+                minusImage
             }
-            
-            
+            price
+            plusImage
             Spacer()
         }
+    }
         .frame(height: 90)
         .clipShape(.rect)
         .background(alignment: .center, content: {
@@ -145,6 +146,36 @@ extension ItemCardView {
         })
         .foregroundStyle(.white)
         .font(.title2)
+        .animation(.bouncy, value: viewModel.itemCount)
+    }
+    
+    var price: some View {
+        Text("\(viewModel.item.price) ₽")
+            .foregroundStyle(.customBackground)
+            .font(.system(size: 22, weight: .bold))
+    }
+    
+    var plusImage: some View {
+        Image(systemName: "plus")
+            .resizable()
+            .frame(width: 25, height: 25)
+            .padding(5)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                viewModel.didTapPlus()
+            }
+    }
+    
+    var minusImage: some View {
+        Image(systemName: "minus")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(width: 25, height: 25)
+            .padding(5)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                viewModel.didTapMinus()
+            }
     }
 }
 
